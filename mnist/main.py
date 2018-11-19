@@ -81,6 +81,7 @@ def train(epochs):
         running_loss = 0.0
         running_entropy = 0.0
         running_count = 0
+        running_acc = 0
         for i, (x, y) in enumerate(loader_train):
 
             x, y = x.to(device), y.to(device)
@@ -97,11 +98,17 @@ def train(epochs):
             running_entropy += criterion_eval(y_pred, to_onehot_sparse(y)).item()
             running_count += len(x)
 
-            # reporting
-            click.echo(f"\rEpoch {epoch+1}, iteration {i+1};"
-                       f" Train Loss: {running_loss / running_count :.5f},"
-                       f" Train Entropy: {running_entropy / running_count :.5f};",
-                       nl=False)
+            _, y_pred = torch.max(y_pred.data, 1)
+            _, y = torch.max(y.data, 1)
+            c = (y_pred == y).squeeze()
+            running_acc += c.sum().item()
+
+        # reporting
+        click.echo(f"Epoch: {epoch+1} "
+                   f" Train-Loss: {running_loss / running_count :.5f}"
+                   f" Train-Acc: {running_acc / running_count :.5f}"
+                   f" Train-Entropy: {running_entropy / running_count :.5f}",
+                   nl=False)
 
         # testing
         net.eval()
@@ -117,10 +124,10 @@ def train(epochs):
             _, y_pred = torch.max(y_pred.data, 1)
             _, y = torch.max(y.data, 1)
             c = (y_pred == y).squeeze()
-            testing_acc += c.sum().item() / len(c)
+            testing_acc += c.sum().item()
 
-        click.echo(f" Test Acc: {testing_acc / testing_count :.5f},"
-                   f" Test Entropy: {testing_entropy / testing_count :.5f}")
+        click.echo(f" Test-Acc: {testing_acc / testing_count :.5f}"
+                   f" Test-Entropy: {testing_entropy / testing_count :.5f}")
 
 
 if __name__ == '__main__':
