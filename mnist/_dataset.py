@@ -12,7 +12,7 @@ class MNIST(torch.utils.data.Dataset):
         x: numpy.array, float
         y: numpy.array, float
         """
-        self.x = x
+        self.x = x.transpose((0, 3, 1, 2))  # 28x28x1 => 1x28x28
         self.y = y
         self.transform = transform
 
