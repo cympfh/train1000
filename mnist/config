@@ -1,0 +1,7 @@
+[global]
+name = sample
+
+[train]
+epochs = 100
+
+# vim: set ft=ini:
