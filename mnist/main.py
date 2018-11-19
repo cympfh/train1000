@@ -29,6 +29,21 @@ def config(section, key, type=str):
     return type(_conf.get(section, key))
 
 
+def to_onehot_sparse(x):
+    """make one-hot vector by argmax
+
+    Parameters
+    ----------
+    Tensor(shape=(batches, n))
+
+    Returns
+    -------
+    Tensor(shape=(batches,))
+    """
+    _, x = torch.max(x.data, 1)
+    return x
+
+
 @click.group()
 def main():
     pass
@@ -56,13 +71,15 @@ def train(epochs):
     net = model.Conv()
     net.to(device)
 
-    criterion = nn.MultiLabelSoftMarginLoss()
+    criterion = nn.MultiLabelSoftMarginLoss(reduction='sum')
+    criterion_eval = nn.CrossEntropyLoss(reduction='sum')
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
     click.secho('Training...', fg='green', err=True)
     for epoch in range(epochs):
 
         running_loss = 0.0
+        running_entropy = 0.0
         running_count = 0
         for i, (x, y) in enumerate(loader_train):
 
@@ -77,32 +94,33 @@ def train(epochs):
             optimizer.step()
 
             running_loss += loss.item()
-            running_count += 1
+            running_entropy += criterion_eval(y_pred, to_onehot_sparse(y)).item()
+            running_count += len(x)
 
             # reporting
             click.echo(f"\rEpoch {epoch+1}, iteration {i+1};"
-                       f" Train Loss: {running_loss / running_count :.5f};",
+                       f" Train Loss: {running_loss / running_count :.5f},"
+                       f" Train Entropy: {running_entropy / running_count :.5f};",
                        nl=False)
 
         # testing
         net.eval()
-        testing_loss = 0.0
         testing_count = 0
+        testing_entropy = 0.0
         testing_acc = 0
         for x, y in loader_test:
             x, y = x.to(device), y.to(device)
             y_pred = net(x)
-            loss = criterion(y_pred, y)
-
-            testing_loss += loss.item()
-            testing_count += 1
+            testing_entropy += criterion_eval(y_pred, to_onehot_sparse(y)).item()
+            testing_count += len(x)
 
             _, y_pred = torch.max(y_pred.data, 1)
             _, y = torch.max(y.data, 1)
             c = (y_pred == y).squeeze()
             testing_acc += c.sum().item() / len(c)
+
         click.echo(f" Test Acc: {testing_acc / testing_count :.5f},"
-                   f" Test Loss: {testing_loss / testing_count :.5f}")
+                   f" Test Entropy: {testing_entropy / testing_count :.5f}")
 
 
 if __name__ == '__main__':

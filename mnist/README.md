@@ -1,9 +1,12 @@
 ## requirements
 
 ```
+# pip install
 Keras==2.1.6  # for dataset
-click
-torch==0.4.0
+click==6.7
+
+# conda install pytorch torchvision -c pytorch
+torch==0.4.1.post2
 torchfile==0.1.0
 torchvision==0.2.1
 ```
