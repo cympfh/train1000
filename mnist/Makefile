@@ -1,5 +1,9 @@
+DATE := $(shell date "+%Y-%m%d-%H%M%S-%s")
+
 train:
-	CUDA_VISIBLE_DEVICES=$(shell empty-gpu-device) python ./main.py train
+	mkdir -p logs images
+	CUDA_VISIBLE_DEVICES=$(shell empty-gpu-device) python ./main.py train | tee logs/$(DATE)
+	gnuplot -e 'date="$(DATE)"' script/plot.gp
 
 dataset:
 	git clone --depth 1 https://github.com/mastnk/train1000 dataset
