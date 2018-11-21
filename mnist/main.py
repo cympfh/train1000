@@ -56,7 +56,6 @@ def train(epochs):
     hyperparams = locals()
     name = config('global', 'name')
     click.secho(f"[{name}] {hyperparams}", fg='yellow')
-    return
 
     device = None
     if torch.cuda.is_available():
