@@ -50,12 +50,20 @@ def main():
 
 
 @main.command()
-@click.option('--epochs', default=100, type=int)
+@click.option('--epochs', default=200, type=int)
 def train(epochs):
 
+    # config
     name = config('global', 'name')
-    click.secho(f"[{name}] {locals()}", fg='yellow')
+    model_name = config('global', 'model')
+    if model_name == 'MixFeatConv':
+        sigma = config('model', 'sigma', type=float)
 
+    hyperparams = locals()
+    name = config('global', 'name')
+    click.secho(f"[{name}] {hyperparams}", fg='yellow')
+
+    # gpu?
     device = None
     if torch.cuda.is_available():
         click.echo('running on GPU', err=True)
@@ -64,17 +72,25 @@ def train(epochs):
         click.echo('running on CPU', err=True)
         device = 'cpu'
 
+    # dataset
     click.secho('Dataset loading...', fg='green', err=True)
     loader_train, loader_test = dataset.load()
 
+    # model network
     click.secho('Network constructing...', fg='green', err=True)
-    net = model.Conv()
+    net = getattr(model, model_name)()
+    if model_name == 'Conv':
+        net = model.Conv()
+    elif model_name == 'MixFeatConv':
+        net = model.MixFeatConv(sigma=sigma)
+    click.echo(str(net), err=True)
     net.to(device)
 
     criterion = nn.MultiLabelSoftMarginLoss(reduction='sum')
     criterion_eval = nn.CrossEntropyLoss(reduction='sum')
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
+    # training
     click.secho('Training...', fg='green', err=True)
     for epoch in range(epochs):
 

@@ -1,4 +1,8 @@
 [global]
-name = sample
+name = MixFeat
+model = MixFeatConv
+
+[model]
+sigma = 0.001
 
 # vim: set ft=ini:
