@@ -3,7 +3,14 @@ DATE := $(shell date "+%Y-%m%d-%H%M%S-%s")
 train:
 	mkdir -p logs images
 	CUDA_VISIBLE_DEVICES=$(shell empty-gpu-device) python ./main.py train | tee logs/$(DATE)
-	gnuplot -e 'date="$(DATE)"' script/plot.gp
+	make plots
+
+plots:
+	for f in $(shell ls logs); do make images/$$f.png; done
+
+images/%.png: logs/%
+	gnuplot -e 'src="$^"' -e 'dest="$@"' -e 'exname="$(shell head -1 $^ | sed 's/_/-/g')"' script/plot.gp
+
 
 dataset:
 	git clone --depth 1 https://github.com/mastnk/train1000 dataset
