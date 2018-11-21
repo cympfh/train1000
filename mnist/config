@@ -1,4 +1,7 @@
 [global]
-name = SimpleConv
+name = SimpleConv+Aug
+
+[dataset]
+aug = True
 
 # vim: set ft=ini:
