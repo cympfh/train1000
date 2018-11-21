@@ -50,11 +50,13 @@ def main():
 
 
 @main.command()
-@click.option('--epochs', default=100, type=int)
+@click.option('--epochs', default=200, type=int)
 def train(epochs):
 
+    hyperparams = locals()
     name = config('global', 'name')
-    click.secho(f"[{name}] {locals()}", fg='yellow')
+    click.secho(f"[{name}] {hyperparams}", fg='yellow')
+    return
 
     device = None
     if torch.cuda.is_available():
