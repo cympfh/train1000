@@ -3,6 +3,9 @@ name = MixFeat
 model = MixFeatConv
 
 [model]
-sigma = 0.001
+sigma = 0.01
+
+[dataset]
+aug = True
 
 # vim: set ft=ini:

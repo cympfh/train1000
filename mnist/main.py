@@ -26,7 +26,10 @@ def config(section, key, type=str):
             defaults=os.environ,
             interpolation=configparser.ExtendedInterpolation())
         _conf.read('config')
-    return type(_conf.get(section, key))
+    val = _conf.get(section, key)
+    if type == bool:
+        return (val != 'False' and val != 'false')
+    return type(val)
 
 
 def to_onehot_sparse(x):
@@ -54,11 +57,10 @@ def main():
 def train(epochs):
 
     # config
-    name = config('global', 'name')
     model_name = config('global', 'model')
     if model_name == 'MixFeatConv':
         sigma = config('model', 'sigma', type=float)
-
+    aug = config('dataset', 'aug', type=bool)
     hyperparams = locals()
     name = config('global', 'name')
     click.secho(f"[{name}] {hyperparams}", fg='yellow')
@@ -74,11 +76,10 @@ def train(epochs):
 
     # dataset
     click.secho('Dataset loading...', fg='green', err=True)
-    loader_train, loader_test = dataset.load()
+    loader_train, loader_test = dataset.load(aug=aug)
 
     # model network
     click.secho('Network constructing...', fg='green', err=True)
-    net = getattr(model, model_name)()
     if model_name == 'Conv':
         net = model.Conv()
     elif model_name == 'MixFeatConv':
