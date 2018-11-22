@@ -1,0 +1,11 @@
+[global]
+name = CIFAR10:SimpleConv
+model = Conv
+
+[model]
+sigma = 0.01
+
+[dataset]
+aug = True
+
+# vim: set ft=ini:
